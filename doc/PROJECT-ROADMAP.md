@@ -27,30 +27,39 @@ The Computer Module guide specifies a recorder frequency response of 500–5,000
 
 ## 2. 6309 computer daughterboard
 
-Create a new cartridge-port daughterboard, physically stacked above the ECS, centred on a Hitachi 6309-compatible CPU. Its purpose is to add a capable, independently programmable computer to the Intellivision/ECS environment, borrowing the Keyboard Component's ambition without requiring that unreleased system's hardware.
+Create an ECS carrier/interface board, physically stacked above the ECS, which hosts or mates to the existing M6x09-II single-board computer fitted with a Hitachi 6309-compatible CPU. Its purpose is to add a capable, independently programmable computer to the Intellivision/ECS environment, borrowing the Keyboard Component's ambition without requiring that unreleased system's hardware.
 
 The 6309 is a different 8-bit CPU family from the Master Component's CP1610 and cannot execute CP1610 binaries directly. MAME models the separate Keyboard Component with a 6502, but its surviving service manual only establishes a two-CPU arrangement, not the CPU identities; no historical binary compatibility is being claimed either way.
 
-### First architecture: isolated coprocessor with mailbox interface
+### First architecture: M6x09-II local computer with isolated mailbox interface
 
-The initial design should give the 6309 its own ROM/flash, RAM, clock, reset circuit, and address/data bus. Discrete 5 V TTL logic exposes a deliberately narrow mailbox/register interface to the CP1610 side: bus transceivers, address decoders, registers/latches, gates, and interrupt/handshake logic.
+The M6x09-II provides the initial 6309's ROM, RAM, clock, reset, serial console, and local address/data bus. Its verified base configuration is 32 KiB SRAM at `$0000`–`$7FFF`, 16 KiB ROM at `$C000`–`$FFFF`, a 68B50-compatible serial interface, ASSIST09 monitor, and a 32-pin expansion header. Keep one board at its proven 7.3728 MHz crystal (`E` ≈ 1.8432 MHz) as the recovery system. The stocked HD63C09RP permits at most a 12 MHz crystal input, producing `E` = 3 MHz. A 12 MHz performance board must isolate the original direct `E` connection to the MC68B50 and feed its `RxC`/`TxC` from a 74LS74 `E ÷ 2` divider (1.5 MHz); otherwise use a 6 MHz CPU crystal (`E` = 1.5 MHz). Do not fit the stocked 16 MHz crystal or use the 14.31818 MHz video source as this CPU's crystal: both exceed the documented CPU limit. The ECS carrier adds only the deliberately narrow mailbox/register interface to the CP1610 side: discrete 5 V 74LS bus transceivers, address decoders, registers/latches, gates, and interrupt/handshake logic.
 
 ```text
-Master Component CP1610 <--safe, decoded mailbox--> interface logic <---> 6309 + local RAM/ROM
+Master Component CP1610 <--safe, decoded mailbox--> ECS carrier <---> M6x09-II / HD6309
           |                                                                    |
           +-------------------- ECS peripherals remain CP1610-owned ----------+
 ```
 
 This makes the 6309 a coprocessor, not a second bus master. It prevents bus contention and lets either processor run independently. Direct control of the Intellivision bus, RAM, STIC, PSGs, cassette UART, or cartridge signals must remain disabled until the required ownership, voltage, direction, and timing rules are measured and documented.
 
+### Existing-board boundary
+
+- The M6x09-II is a local computer, not a peripheral to be driven by the ECS. Its power, reset, and bus remain autonomous.
+- The carrier may attach only through a measured expansion-header pinout. Before any connection, document each pin's direction, reset state, voltage, timing, and contention tolerance.
+- The recovery M6x09-II's HD6309, ASSIST09 monitor, ROM/RAM map, and serial workflow are reused unchanged for initial bring-up. A later project ROM may add mailbox drivers without removing the recovery monitor until replacement boot recovery is proven.
+- Use distinct board identities for reference and performance configurations. The performance-board acceptance record must include oscillator marking, measured `E` frequency, CPU marking/speed grade, ROM checksum, ACIA control word and measured baud, 5 V rail under load, and expansion-bus timing captures.
+- M6x09-I is a useful software/peripheral development platform, but its GAL16V8 address decoder and 89C2051 tick generator exclude it from the discrete-TTL daughterboard baseline.
+
 ### Deliverables
 
 1. Establish electrical constraints: connector/pinout, supply rails, logic thresholds, timing, reset behavior, and power budget.
 2. Define a read/write register map for command, status, data, interrupt/handshake, and reset; publish it before firmware development.
-3. Prototype the daughterboard in isolation and verify the 6309's RAM, ROM/flash, serial console, reset, and clock behavior.
-4. Implement the CP1610-facing interface with electrically safe 5 V TTL bus buffers, deterministic address decode, and discrete handshake logic.
-5. Supply a minimal CP1610 client and 6309 monitor that exchange data through the mailbox.
-6. Add higher-level services only after the mailbox is reliable: storage transfer, graphics/sound command queues, keyboard access, and development tools.
+3. Re-run and record M6x09-II standalone acceptance: HD6309, RAM, ROM/ASSIST09, serial console, reset release, and clock; retain it as the recovery baseline.
+4. Continuity-map and document the M6x09-II expansion header before assigning carrier signals; do not infer the complete header pinout from board function alone.
+5. Implement the CP1610-facing carrier interface with electrically safe 5 V TTL bus buffers, deterministic address decode, and discrete handshake logic.
+6. Supply a minimal CP1610 client and 6309 monitor/ASSIST09-resident program that exchange data through the mailbox.
+7. Add higher-level services only after the mailbox is reliable: storage transfer, graphics/sound command queues, keyboard access, and development tools.
 
 ## 3. ECS audio integration or additional-PSG re-creation
 

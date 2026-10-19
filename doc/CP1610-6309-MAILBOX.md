@@ -2,12 +2,12 @@
 
 ## Purpose
 
-The mailbox is a small, buffered command interface between the Master Component's CP1610 and the daughterboard's 6309. It allows the 6309 to request work from ECS-aware CP1610 software without directly taking ownership of the ECS cartridge bus, SDCC, RAM, or AY-3-8917 pins.
+The mailbox is a small, buffered command interface between the Master Component's CP1610 and the M6x09-II local computer's HD6309. The M6x09-II is the initial 6309 endpoint; the ECS carrier connects through only a measured, documented subset of its expansion header. The mailbox allows the 6309 to request work from ECS-aware CP1610 software without directly taking ownership of the ECS cartridge bus, SDCC, RAM, or AY-3-8917 pins.
 
 The first use is safe access to the **real ECS AY-3-8917**: the 6309 asks for a sound-register update; CP1610-side code performs the physical ECS PSG write.
 
 ```text
-6309 → local TTL mailbox → CP1610 service routine → ECS AY-3-8917
+M6x09-II HD6309 → local TTL mailbox → CP1610 service routine → ECS AY-3-8917
 ```
 
 ## Why a mailbox is needed

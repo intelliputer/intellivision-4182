@@ -160,7 +160,7 @@ For bulk uploads, `VCMD` must also provide a `STREAM_WRITE` mode: set `VADDR` on
 
 The video output itself refreshes independently at the selected composite frame rate. The CPU does **not** need to redraw unchanged pixels for the display to remain stable. What is limited is how much new framebuffer data the 6309 can upload each frame.
 
-The 320 × 240, 4bpp framebuffer contains 19,200 16-bit words (38,400 bytes). In streaming mode, a complete rewrite needs 38,400 byte writes. A 6309 clocked at 3.58 MHz can theoretically sustain roughly 18 full framebuffer uploads per second if every write consumes five CPU cycles and there are no arbitration waits; real code, loop overhead, and video-RAM ownership reduce that to approximately **10–15 full-screen updates per second**. A proven 7.16 MHz 6309 design could approximately double those figures, but it demands tighter board timing and a suitable CPU speed grade.
+The 320 × 240, 4bpp framebuffer contains 19,200 16-bit words (38,400 bytes). In streaming mode, a complete rewrite needs 38,400 byte writes. The reference M6x09-II configuration (`E` ≈ 1.8432 MHz) is expected to manage about **4–7 full-screen updates per second** in real code. With the stocked HD63C09RP, a separately populated performance board may use at most a 12 MHz crystal (`E` = 3 MHz); after CPU, ACIA, power, expansion-bus, and TTL-interface acceptance, **roughly 8–12 full-screen updates per second** is the planning range. The 14.31818 MHz source is the video master clock and must not be fitted as the stock CPU crystal. Neither CPU configuration makes 60 Hz full-screen framebuffer animation the right design target.
 
 This is not how the Master Component normally achieves animation. Its CP1610 runs at roughly 0.895 MHz, but the STIC draws its cards and moving objects in hardware. Small object/register updates can therefore appear at the television frame rate without repainting the screen. The first framebuffer-only controller will match the Master Component's *60 Hz display refresh*, but not its most efficient object-animation method when a full screen changes.
 
@@ -190,10 +190,10 @@ Quantities are planning estimates, not a released schematic or purchase list. Eq
 
 | Block | Suggested parts | Qty. | Notes |
 | --- | --- | ---: | --- |
-| CPU | HD63C09E or compatible 6309 | 1 | CPU board may be separate from the controller board. |
+| CPU/local computer | M6x09-II SBC fitted with a suitably rated HD6309 | 1 | Existing core board; keep a 7.3728 MHz recovery unit and qualify a separate performance unit. |
 | VRAM | 62256, 32K × 8, 5 V asynchronous SRAM | 2 | One low-byte and one high-byte bank; use 55 ns or faster initially. |
-| Program RAM | 62256 or 6264 SRAM | 1–2 | Local 6309 RAM; capacity is a system decision. |
-| Firmware | 27C256 EPROM or compatible EEPROM | 1 | 6309 monitor/diagnostic firmware. |
+| Program RAM | Already on M6x09-II (62256) | — | Do not duplicate unless a later local-memory expansion requires it. |
+| Firmware | Already on M6x09-II (`27C128`) | — | ASSIST09 remains the recovery monitor initially. |
 | Master clock | 14.31818 MHz, 5 V TTL oscillator | 1 | NTSC master clock; divide by 2 for the 7.15909 MHz controller clock and by 4 for colour subcarrier. |
 | Horizontal/vertical counters | 74LS163 synchronous 4-bit counters | 6–8 | Three per 9/10-bit counter plus spares/derived counters. |
 | Comparators | 74LS688 8-bit equality comparators | 3–5 | Timing endpoints, raster compare, and address/control decode. |
@@ -244,9 +244,7 @@ Expect the controller to occupy roughly 50–90 logic/memory packages before opt
 
 | Part | Initial quantity |
 | --- | ---: |
-| HD63C09/6309 CPU | 1 |
-| 27C256 firmware ROM | 1 |
-| 62256/6264 local CPU RAM | 2 |
+| M6x09-II SBC, fitted with suitably rated HD6309 | 1 performance unit; 1 retained recovery unit |
 | 62256 (32K × 8) video RAM | 2 |
 | 14.31818 MHz, 5 V oscillator | 1 |
 | 74LS00 | 3 |

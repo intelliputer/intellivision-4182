@@ -10,7 +10,7 @@ This is a capability-recovery project, not a reproduction of an unreleased Keybo
 | --- | --- | --- |
 | 0 — Reference baseline | Preserve an unmodified ECS/Master Component; document target-board revision, power, connectors, audio, cassette, and bus observations. | Measurements and test artefacts exist before irreversible work. |
 | 1 — Digital cassette source | Solid-state recorder substitute for `IN FROM TAPE`, `OUT TO TAPE`, and `REMOTE`; retain lossless recordings and decoded data when understood. | Repeated `CSAVE` / `CVRF` / `CLOAD` tests on original hardware. |
-| 2 — Local 6309 computer | A 6309 daughterboard physically above the ECS, with its own ROM, RAM, clock, reset, monitor, and diagnostics. | It passes standalone RAM, ROM, reset, and console tests without driving the host bus. |
+| 2 — Local 6309 computer | Use the working M6x09-II SBC, fitted with its HD6309, as the local computer core; an ECS carrier/interface board physically above the ECS supplies the mailbox and later peripherals. | Its existing RAM, ROM monitor, reset, clock, and console pass standalone acceptance tests without driving the host bus. |
 | 3 — Safe host cooperation | Discrete 5 V 74LS TTL CP1610–6309 mailbox, with a CP1610 service program and explicit ownership/handshake rules. | `SERVICE_PING` and bounded data exchange are reliable; the 6309 remains a bus client, not a second bus master. |
 | 4 — Reuse ECS services | Mailbox-controlled keyboard/input, printer, cassette, and the real ECS AY-3-8917; buffer the desired audio to the companion's 3.5 mm TRS output. | One service at a time passes measured, repeatable tests. |
 | 5 — Independent workstation video | MAGIC-inspired, 6309-led discrete-TTL video controller, composite encoder, sibling composite-output board, and RCA output. | Stable timing and test patterns first; then efficient cards/tiles and moving objects rather than framebuffer-only animation. |
@@ -23,18 +23,27 @@ The detailed deliverables and safety rules are in [the project roadmap](doc/PROJ
 ## Architecture at a glance
 
 ```text
-Master Component (CP1610) <--> ECS #4182 <--> decoded TTL mailbox <--> 6309 + local ROM/RAM
+Master Component (CP1610) <--> ECS #4182 <--> decoded TTL mailbox <--> M6x09-II (HD6309)
           |                         |                                      |
-          |                         +-- original ECS peripherals             +-- 16-bit internal TTL video path
-          |                              remain CP1610-owned                       -> encoder -> composite board -> RCA
-          +-- original system video/audio                                           -> mailbox-requested ECS audio -> 3.5 mm TRS
+          |                         +-- original ECS peripherals             +-- local ROM/RAM, ASSIST09, serial console
+          |                              remain CP1610-owned                 +-- later: 16-bit TTL video path -> RCA
+          +-- original system video/audio                                    +-- mailbox-requested ECS audio -> 3.5 mm TRS
 ```
 
 The mailbox is the default integration point. It lets the 6309 request CP1610-controlled services without electrically taking over the cartridge bus, ECS PSG, input ports, cassette UART, or STIC.
 
+## Local-computer baseline
+
+The [M6x09-II SBC](../../cartheur/M6x09-II-SBC/README.md) is the preferred Level-2 core: it has an HD6309-compatible CPU socket, 32 KiB SRAM, a 16 KiB `27C128` ROM map, a 68B50-compatible serial interface, ASSIST09 monitor, 74LS00 glue logic, and a 32-pin expansion header. Retain one board at its proven 7.3728 MHz crystal (`E` ≈ 1.8432 MHz) as a recovery/reference system. With the stocked HD63C09RP, a separate blank performance board may use a 12 MHz crystal (`E` = 3 MHz), but it must divide `E` by two before the MC68B50's `RxC`/`TxC` inputs; the ACIA is rated to 1.5 MHz. Without that change, use a 6 MHz CPU crystal (`E` = 1.5 MHz). The 14.31818 MHz source remains for video timing only, not the stock CPU. The carrier must connect only to a measured, documented subset of the expansion header and must never back-power or drive the SBC bus during reset.
+
+The [M6x09-I SBC](../../cartheur/M6x09-I-SBC/README.md) remains useful for firmware and peripheral experiments, but is not the target daughterboard baseline: its core address decode uses a GAL16V8 and its tick source is an 89C2051, both outside this project's discrete-logic rule.
+
 ## Design references
 
 - [CP1610–6309 mailbox interface](doc/CP1610-6309-MAILBOX.md)
+- [Third M6x09-II board feasibility and parts gate](doc/M6X09-II-THIRD-BOARD-FEASIBILITY.md)
+- [Graphics integration paths](doc/GRAPHICS-INTEGRATION-PATHS.md)
+- [Dual-M6x09 machine-intelligence proposal](doc/DUAL-M6X09-MACHINE-INTELLIGENCE-PROPOSAL.md)
 - [TTL 16-bit video controller proposal](doc/TTL-16BIT-VIDEO-CONTROLLER.md)
 - [Video performance analysis](doc/VIDEO-PERFORMANCE-ANALYSIS.md)
 - [MAGIC alternative](doc/MAGIC-ALTERNATIVE.md)

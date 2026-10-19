@@ -32,19 +32,20 @@ Two 6309s would not create a coherent 16-bit CPU bus; they would add ownership a
 | Video word | 16 bits / four pixels | Proposed paired-SRAM organisation |
 | Words per framebuffer | 19,200 | Derived: 38,400 / 2 |
 | Upload method | `STREAM_WRITE`: low byte then high byte | Proposed register-interface optimisation |
-| CPU clock example | 3.58 MHz | Working estimate; actual permitted 6309 speed must be confirmed |
+| Recovery CPU clock | 1.8432 MHz `E` | Proven M6x09-II configuration: 7.3728 MHz oscillator divided by four |
+| Performance CPU clock candidate | 3 MHz `E` | 12 MHz crystal divided by four; documented limit of the stocked HD63C09RP and requires a separately accepted board |
 | I/O cost assumption | 5 CPU cycles per byte write | Optimistic estimate; must be measured on the actual board |
 
 ### Theoretical ceiling
 
 ```text
-3.58 MHz / 5 cycles per byte write = 716,000 byte writes per second
-716,000 / 38,400 bytes per frame = 18.6 complete frame uploads per second
+Recovery unit:    1.8432 MHz / 5 = 368,640 byte writes/s = 9.6 frame uploads/s theoretical
+Performance unit: 3.0000 MHz / 5 = 600,000 byte writes/s = 15.6 frame uploads/s theoretical
 ```
 
-That figure excludes loop overhead, register setup, status polling, arbitration waits, interrupt work, and useful game/application code. A sensible early estimate is **10–15 full-screen updates per second**.
+Those figures exclude loop overhead, register setup, status polling, arbitration waits, interrupt work, and useful game/application code. A sensible planning range is **4–7 full-screen updates per second** on the recovery clock and **8–12** on an accepted performance board.
 
-If the selected 6309 and the finished board prove reliable at 7.16 MHz, the theoretical transfer ceiling approximately doubles. This does not automatically make 60 Hz full-screen updates feasible, especially once real software and contention are included.
+The performance crystal is not a speed-grade override: with the stocked HD63C09RP, do not exceed 12 MHz crystal input / 3 MHz `E`. Acceptance must verify the CPU marking/specification, `E` clock, 5 V rail under load, ROM/RAM operation, ACIA divisor and actual baud, expansion-bus timing, and mailbox/video operation. Even then, 60 Hz full-screen updates remain implausible once real software and contention are included.
 
 ## Comparison with the Master Component
 
@@ -70,7 +71,8 @@ The objective therefore is not “make the 6309 write pixels faster than the STI
 
 ## Measurements required
 
-- Exact 6309 part number, speed grade, clock frequency, and bus-cycle timing.
+- Exact 6309 part number, speed grade, oscillator marking, `E` clock frequency, and bus-cycle timing for both recovery and performance boards.
+- Performance-board serial/ACIA control word, measured baud, ROM checksum, and supply voltage under sustained load.
 - 74LS propagation-delay margin at the selected controller clock and board trace length.
 - SRAM access time, output-enable time, write-pulse timing, and margin under display fetch.
 - Number and placement of CPU service slots per scan line/frame.
