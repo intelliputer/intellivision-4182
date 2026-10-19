@@ -27,13 +27,13 @@ The Computer Module guide specifies a recorder frequency response of 500–5,000
 
 ## 2. 6309 computer daughterboard
 
-Create a new daughterboard centred on a Hitachi 6309-compatible CPU. Its purpose is to add a capable, independently programmable computer to the Intellivision/ECS environment, borrowing the Keyboard Component's ambition without requiring that unreleased system's hardware.
+Create a new cartridge-port daughterboard, physically stacked above the ECS, centred on a Hitachi 6309-compatible CPU. Its purpose is to add a capable, independently programmable computer to the Intellivision/ECS environment, borrowing the Keyboard Component's ambition without requiring that unreleased system's hardware.
 
-The 6309 is a different 8-bit CPU family from both the Master Component's CP1610 and the Keyboard Component's 6502. It cannot execute CP1610 or 6502 binaries directly.
+The 6309 is a different 8-bit CPU family from the Master Component's CP1610 and cannot execute CP1610 binaries directly. MAME models the separate Keyboard Component with a 6502, but its surviving service manual only establishes a two-CPU arrangement, not the CPU identities; no historical binary compatibility is being claimed either way.
 
 ### First architecture: isolated coprocessor with mailbox interface
 
-The initial design should give the 6309 its own ROM/flash, RAM, clock, reset circuit, and address/data bus. A small CPLD/FPGA or equivalent bus-interface logic exposes a deliberately narrow mailbox/register interface to the CP1610 side.
+The initial design should give the 6309 its own ROM/flash, RAM, clock, reset circuit, and address/data bus. Discrete 5 V TTL logic exposes a deliberately narrow mailbox/register interface to the CP1610 side: bus transceivers, address decoders, registers/latches, gates, and interrupt/handshake logic.
 
 ```text
 Master Component CP1610 <--safe, decoded mailbox--> interface logic <---> 6309 + local RAM/ROM
@@ -48,13 +48,28 @@ This makes the 6309 a coprocessor, not a second bus master. It prevents bus cont
 1. Establish electrical constraints: connector/pinout, supply rails, logic thresholds, timing, reset behavior, and power budget.
 2. Define a read/write register map for command, status, data, interrupt/handshake, and reset; publish it before firmware development.
 3. Prototype the daughterboard in isolation and verify the 6309's RAM, ROM/flash, serial console, reset, and clock behavior.
-4. Implement the CP1610-facing interface with electrically safe bus buffers and deterministic address decode.
+4. Implement the CP1610-facing interface with electrically safe 5 V TTL bus buffers, deterministic address decode, and discrete handshake logic.
 5. Supply a minimal CP1610 client and 6309 monitor that exchange data through the mailbox.
 6. Add higher-level services only after the mailbox is reliable: storage transfer, graphics/sound command queues, keyboard access, and development tools.
+
+## 3. ECS audio integration or additional-PSG re-creation
+
+Provide the companion system's audio through a 3.5 mm TRS female output (dual-mono initially). The project may integrate original mixed audio, use the original ECS AY-3-8917 through CP1610 mailbox commands, experimentally add direct access to that existing PSG, or build an ECS additional-PSG re-creation around a real AY-3-8917 and TTL control circuitry.
+
+1. Measure and document a post-mix, pre-RF/baseband audio tap on the target original hardware, including level, impedance, DC bias, and noise.
+2. Build an AC-coupled buffer that presents the integrated mono signal safely on both TRS channels without tying driven outputs together.
+3. Implement CP1610-side mailbox services that program the original ECS AY-3-8917 on behalf of the 6309; this is the preferred non-invasive control path.
+4. If direct PSG access is pursued, map every AY-3-8917 signal, add buffered single-owner arbitration, and use documented, reversible splice/jumper arrangements before cutting any track.
+5. In parallel, specify an ECS additional-PSG re-creation board: a real AY-3-8917, clock, reset, register interface, analogue output, mixer, and controller-port behaviour.
+6. Compare frequency, volume, noise, register response, and output level against original ECS audio before calling a direct-access modification or re-creation compatible.
+7. Treat the existing Master Component AY-3-8914 path separately: the additional-PSG re-creation supplies only the ECS-added three channels, not a standalone six-channel reconstruction.
+
+The CP1610-facing command protocol is specified in [the CP1610–6309 mailbox interface](CP1610-6309-MAILBOX.md).
 
 ## Shared rules
 
 - Preserve an original ECS and Master Component as reference hardware; do not use either as an undocumented development target.
+- Use discrete 5 V TTL/SSI/MSI logic; FPGAs, CPLDs, and other programmable-logic devices are out of scope.
 - Capture measurements, schematics, firmware builds, test programs, and recordings in version control.
 - Treat every unverified historical detail as a hypothesis, with its source and confidence level recorded.
 - Keep original-ECS compatibility separate from extensions that require the 6309 daughterboard.
