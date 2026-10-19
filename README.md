@@ -8,8 +8,8 @@ This is a capability-recovery project, not a reproduction of an unreleased Keybo
 
 | Level | Deliverable | Boundary / exit condition |
 | --- | --- | --- |
-| 0 — Reference baseline | Preserve an unmodified ECS/Master Component; document target-board revision, power, connectors, audio, cassette, and bus observations. | Measurements and test artefacts exist before irreversible work. |
-| 1 — Digital cassette source | Solid-state recorder substitute for `IN FROM TAPE`, `OUT TO TAPE`, and `REMOTE`; retain lossless recordings and decoded data when understood. | Repeated `CSAVE` / `CVRF` / `CLOAD` tests on original hardware. |
+| 0 — Reference baseline | Preserve an unmodified ECS/Master Component; document target-board revision, power, connectors, audio, cassette, and bus observations. Use the Analog Discovery 2 to capture three guide-defined `CSAVE TEST` waveforms through a passive breakout. | Connector/return mapping, raw captures, voltage/timing evidence, and a safe AD2 replay-fixture record exist before any active external-data circuit. |
+| 1 — Digital cassette source | Solid-state recorder substitute for `IN FROM TAPE`, `OUT TO TAPE`, and, where useful, `REMOTE`; retain lossless recordings and decoded data when understood. | Repeated `CSAVE` / `CVRF` / `CLOAD` tests on original hardware. |
 | 2 — Local 6309 computer | Use the working M6x09-II SBC, fitted with its HD6309, as the local computer core; an ECS carrier/interface board physically above the ECS supplies the mailbox and later peripherals. | Its existing RAM, ROM monitor, reset, clock, and console pass standalone acceptance tests without driving the host bus. |
 | 3 — Safe host cooperation | Discrete 5 V 74LS TTL CP1610–6309 mailbox, with a CP1610 service program and explicit ownership/handshake rules. | `SERVICE_PING` and bounded data exchange are reliable; the 6309 remains a bus client, not a second bus master. |
 | 4 — Reuse ECS services | Mailbox-controlled keyboard/input, printer, cassette, and the real ECS AY-3-8917; buffer the desired audio to the companion's 3.5 mm TRS output. | One service at a time passes measured, repeatable tests. |
@@ -20,19 +20,25 @@ No FPGA, CPLD, GAL, or other programmable-logic device belongs in this project. 
 
 The detailed deliverables and safety rules are in [the project roadmap](doc/PROJECT-ROADMAP.md). The capability rationale and Keyboard Component evidence are in [Keyboard Component capability recovery](doc/KEYBOARD-COMPONENT-CAPABILITY-RECOVERY.md).
 
-Practical, module-by-module bench sequences are collected in the [module workplans](modules/README.md). The [external-data workplan](modules/external-data/WORKPLAN.md) is the first active implementation task; its cassette compatibility gate precedes the new-computer modules.
+Practical, module-by-module bench sequences are collected in the [module workplans](modules/README.md). The active task is the [AD2 `TEST` cassette baseline](modules/reference-baseline/CONDUCTING-TEST.md); it precedes the [external-data workplan](modules/external-data/WORKPLAN.md), whose cassette compatibility gate in turn precedes the new-computer modules.
 
 ## Architecture at a glance
 
 ```text
-Master Component (CP1610) <--> ECS #4182 <--> decoded TTL mailbox <--> M6x09-II (HD6309)
-          |                         |                                      |
-          |                         +-- original ECS peripherals             +-- local ROM/RAM, ASSIST09, serial console
-          |                              remain CP1610-owned                 +-- later: 16-bit TTL video path -> RCA
-          +-- original system video/audio                                    +-- mailbox-requested ECS audio -> 3.5 mm TRS
+Master Component (CP1610) <--> ECS #4182 <--> CP1610–6309 TTL mailbox <--> M6x09-II A
+          |                         |                                           coordinator
+          |                         +-- original ECS peripherals                  |
+          |                              remain CP1610-owned                       +-- local ROM/RAM, console
+          +-- original system video/audio                                           +-- TTL video path -> RCA
+                                                                              +-- ECS audio requests -> 3.5 mm TRS
+                                                                                       |
+                                                                            TTL local-node mailbox
+                                                                                       |
+                                                                                 M6x09-II B
+                                                                              machine-intelligence node
 ```
 
-The mailbox is the default integration point. It lets the 6309 request CP1610-controlled services without electrically taking over the cartridge bus, ECS PSG, input ports, cassette UART, or STIC.
+The CP1610–6309 mailbox is the default ECS integration point. It lets coordinator A request CP1610-controlled services without electrically taking over the cartridge bus, ECS PSG, input ports, cassette UART, or STIC. A later, independent local-node mailbox connects A to B; B never directly accesses ECS, STIC, or companion video RAM.
 
 ## Local-computer baseline
 
