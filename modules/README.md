@@ -24,7 +24,7 @@ Only `external-data` is an active build priority now. `reference-baseline` conti
 | Risk | Containment | Gate that must pass |
 | --- | --- | --- |
 | Damage to scarce original hardware | Keep a reference pair unmodified; use passive breakouts and sacrificial cables. | Reference measurements and normal-operation test. |
-| Incorrect cassette connector, level, or loading | Capture a real-recorder reference and measure each lead before attaching active electronics. | Repeated raw-capture playback and `CSAVE`/`CVRF`/`CLOAD`. |
+| Incorrect cassette connector, level, or loading | Capture native ECS signals with the AD2 and measure each lead before attaching active electronics. | Repeated raw-capture replay and `CSAVE`/`CVRF`/`CLOAD`. |
 | 6309 board is unstable or unrecoverable | Retain a known-good board/ROM; test the candidate standalone. | Monitor, RAM, ROM, serial, reset, power, and timing acceptance. |
 | CP1610/ECS bus contention | Use decoded, buffered, tri-stated TTL mailbox registers only. | `SERVICE_PING` and soak/reset tests with no unselected driver. |
 | Audio/video interference or incorrect ownership | Keep audio on TRS and companion video on RCA; make the original owner execute ECS services. | Measured output and one-service-at-a-time regression tests. |

@@ -87,6 +87,6 @@ The CP1610-facing command protocol is specified in [the CP1610–6309 mailbox in
 
 ## Immediate next experiment
 
-Make one known-good `CSAVE` recording with an ECS and a recorder from the guide's compatible class, digitize it at a lossless sample rate, and record the program name, ECS region (NTSC/PAL), recorder model, cable type, and volume settings. That capture is the reference artifact for the digital cassette-data work.
+Use the Analog Discovery 2 through a passive, continuity-mapped breakout to capture three `CSAVE` waveforms from an ECS. Record the program name, ECS region (NTSC/PAL), cable/breakout identity, AD2 settings, and capture identifiers. Those raw captures are the first reference artefacts for the digital cassette-data work.
 
-Do not connect an active digital device to either data lead until the connector, common/return, levels, and recorder-side loading have been measured. The first interface fixture should be passive: a correctly identified breakout and observation lead for the real recorder, followed by playback-only emulation, then capture, then `REMOTE` control.
+Do not connect an active digital device to either data lead until the connector, common/return, levels, and loading have been measured. The first interface fixture is a passive breakout and AD2 observation lead; then build the protected AD2 Wavegen test box, establish controlled replay, design playback and capture circuits, and finally consider `REMOTE` control.

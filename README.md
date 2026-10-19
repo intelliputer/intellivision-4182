@@ -65,7 +65,7 @@ The [M6x09-I SBC](../../cartheur/M6x09-I-SBC/README.md) remains useful for firmw
 
 ## Notes on connections
 
-The ECS reference identifies a cassette-recorder/printer interface and two extra input ports. The exact physical connector labels, pinouts, electrical levels, and the cassette data encoding are not specified by that source; they should be verified from an ECS service manual or by measurement before designing a compatible recorder/emulator.
+The ECS guide specifies two mini-phone data cables (`EAR → IN FROM TAPE`, `OUT TO TAPE → MIC`) and a sub-mini-phone remote cable (`REM → REMOTE`); the corresponding harness is documented in [the external-data cable sheet](modules/external-data/CABLE-HARNESS.md). It does not publish a tip/sleeve electrical schematic, signal levels, or cassette encoding, so those remain measurement tasks before designing a compatible recorder/emulator.
 
 ## Source
 
