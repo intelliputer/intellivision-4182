@@ -12,10 +12,11 @@ Read [TTL 16-bit video controller proposal](../../doc/TTL-16BIT-VIDEO-CONTROLLER
 - The M6x09-II submits commands through a controlled interface; it does not share the live video RAM bus.
 - Video leaves through the project’s separate `video-composites` board to RCA. Audio does not travel on RCA.
 - NTSC/PAL conversion is outside this module; an RCA-to-HDMI converter handles display compatibility.
+- The HP/Vector carrier may connect to a video daughterboard with a defined harness as roles are assigned. Carry only protected power, reset, registered command/status signals, and the final conditioned composite/audio connection where needed. Keep the video clock, pixel path, VRAM buses, and timing-critical TTL local to the daughterboard.
 
 ## Work
 
-1. Freeze a revision-one display mode, colour strategy, memory map, timing budget, and 5 V power estimate.
+1. Freeze a revision-one display mode, colour strategy, memory map, timing budget, 5 V power estimate, and the carrier-versus-daughterboard ownership boundary. If a harness is used, assign every conductor, its return path, voltage level, direction, termination/protection, and maximum intended cable length.
 2. Build the clock/reset and horizontal/vertical timing chain on a test fixture. Verify stable sync, blanking, and test points before attaching VRAM.
 3. Add display-address generation, paired VRAM, and serial/parallel pixel output. Prove static patterns, then RAM-read consistency and no bus contention.
 4. Add the TTL/composite encoder stage and test through the existing video-composites board to its RCA output.

@@ -15,6 +15,8 @@ Each directory is an independently testable part of the grand plan. A later modu
 
 Shared constraints: 5 V discrete 74LS TTL logic; no FPGA, CPLD, GAL, or programmable logic; no raw pin-to-pin CPU-bus links; and retain at least one unmodified ECS/Master Component plus one known-good M6x09-II as references.
 
+The stripped HP 1611A main-board assembly plus its HP 5036A-derived +5 V supply is the available powered mechanical card platform. Vector 8801-6 cards fit its 100-pin slot. It is initially allocated to `external-data` and is a qualified power/card carrier only—not an S-100 system or a pre-defined project bus. A card may run a documented harness to a daughterboard as circuit roles become clear: use it for protected power, reset, registered command/status signals, and the final composite/audio connection as applicable. Keep pixel clocks, raw pixel data, VRAM address/data buses, and other timing-critical video nets local to the video daughterboard; do not turn the harness or 100-pin slot into an unqualified high-speed bus. Other modules may use the platform only after their own interface, power, grounding, buffering, and acceptance gates are documented.
+
 ## Priority rule
 
 Only `external-data` is an active build priority now. `reference-baseline` continues alongside it. The other modules may receive research notes and designs, but no ECS-facing integration begins until the required prior gate passes. `ttl-video` may be developed on its own bench after the local-6309 gate, because it does not need to drive the original system.

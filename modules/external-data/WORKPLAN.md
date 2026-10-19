@@ -6,6 +6,18 @@ Make a solid-state external-data device that behaves as a compatible cassette re
 
 This is the first active hardware project. Do not connect an MCU, DAC, sound card, or other active circuit to the ECS until Phase 1 is complete.
 
+## Implementation rule
+
+The finished external-data device is a project-built circuit, not an assembly of third-party development, audio, storage, ADC/DAC, or converter boards. It may use normal production ICs, sockets, discrete components, an SD socket, and a project PCB or wire-wrap assembly; all controller, storage, conversion, analogue-conditioning, power, and connector circuitry belongs on that assembly. The Analog Discovery 2 remains a test instrument only, never a permanent part of the device.
+
+## Revision-zero integration platform
+
+The principal revision-zero carrier is a Vector `8801-6` wire-wrap card in the stripped Hewlett-Packard 1611A main-board assembly. The card has been physically test-fitted and fits the assembly's 100-pin slot exactly. The HP board is deliberately treated as a **powered mechanical backplane**, not as an S-100 computer or a reused HP signal bus: its legacy circuitry has been stripped, and its revised power input carries only +5 V and ground from the salvaged Hewlett-Packard 5036A supply.
+
+Use the 8801-6 for the full external-data prototype so that its analogue input, analogue playback output, controller/SD circuitry, and power entry can be physically separated. The smaller Vector `8015-1` remains the preferred carrier for isolated subcircuit experiments, such as a filter, output-driver, or protection network.
+
+Before a project card is populated, make and retain a slot pin map. Only independently verified +5 V and ground contacts may be used at first; all other contacts are `NC`. A later inter-card connection must have a named function, a documented pin assignment, a defined ground return, and buffer/isolation appropriate to that function. It must never become an unqualified shared CPU or video bus.
+
 ## Definition of done
 
 On an unmodified Master Component and ECS, the device can:
@@ -27,7 +39,8 @@ Before beginning, assemble:
 - oscilloscope with ×10 probes, DMM, and a logic/audio capture method that does not load the signal appreciably;
 - the Analog Discovery 2, WaveForms, and its local datasheet;
 - labelled raw-capture storage and a notebook or test log;
-- a current-limited 5 V bench supply for the future digital device.
+- the stripped HP 1611A main-board assembly, its 100-pin card slot, the fitted Vector `8801-6`, and the salvaged HP 5036A-derived +5 V supply;
+- a current-limited 5 V bench supply for isolated subcircuit work and for comparison against the HP supply.
 
 Keep one ECS/Master Component pair as the untouched reference system. Make measurements through a passive breakout, never by modifying that reference pair.
 
@@ -36,6 +49,23 @@ Build the ECS-side 3.5 mm straight-through data leads from [the cable-harness sh
 The period [Rodney cassette-interface reference](RODNEY-TAPE-INTERFACE-REFERENCE.md) is a useful analogue-front-end pattern: separate AC-coupled transmit and receive chains, defined gain/loading, and a testable digital slicer. It is not an ECS circuit; its values, approximately 3 kHz / 100 bit/s format, and connector assignments are unproven for this project.
 
 The AD2 captures the ECS output directly, then supplies controlled replay through a protected test box; those results define the final playback and capture circuits.
+
+The current custom-board inventory assessment is [revision-zero BoM](BOM.md). It distinguishes confirmed IC stock from components whose exact selection must wait for the baseline captures.
+
+## Phase 0A — Powered-backplane qualification
+
+**Goal:** qualify the stripped HP/8801 assembly as a safe project-card carrier without connecting it to the ECS.
+
+1. Photograph the stripped HP board, revised power plug, slot, card orientation/keying, and fitted 8801-6.
+2. Create a numbered map of all 100 slot contacts. Mark only measured +5 V and ground contacts as allocated; mark every other contact `NC`.
+3. With power disconnected, verify continuity within each nominated +5 V group and each nominated ground group, and verify that the groups are not shorted together.
+4. Energize the assembly with no project card installed. Measure the +5 V value, polarity, ripple/noise, and any unexpected voltage on every contact intended for use.
+5. Add a card-local fuse or resettable protector, reverse-polarity protection where appropriate, connector-entry bulk capacitance, and 100 nF decoupling at every IC before fitting active circuitry.
+6. Prove the first populated card does not overheat or exceed its planned supply current with the ECS entirely disconnected.
+
+**Exit condition:** a dated slot/power map and no-load/controlled-load measurements show a correctly polarised, stable +5 V rail; the protected 8801-6 card can power safely without the ECS attached.
+
+**Stop condition:** any unexpected powered contact, uncertain slot orientation, abnormal ripple, heat, smell, or unexplained current draw stops platform work until the map and supply path are corrected.
 
 ## Phase 0 — Test records and log
 
