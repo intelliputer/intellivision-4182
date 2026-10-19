@@ -20,6 +20,8 @@ No FPGA, CPLD, GAL, or other programmable-logic device belongs in this project. 
 
 The detailed deliverables and safety rules are in [the project roadmap](doc/PROJECT-ROADMAP.md). The capability rationale and Keyboard Component evidence are in [Keyboard Component capability recovery](doc/KEYBOARD-COMPONENT-CAPABILITY-RECOVERY.md).
 
+Practical, module-by-module bench sequences are collected in the [module workplans](modules/README.md). The [external-data workplan](modules/external-data/WORKPLAN.md) is the first active implementation task; its cassette compatibility gate precedes the new-computer modules.
+
 ## Architecture at a glance
 
 ```text

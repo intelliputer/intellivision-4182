@@ -2,6 +2,8 @@
 
 This repository has two related, but independently deliverable, hardware projects. The first preserves compatibility with the released ECS #4182. The second is a new computer subsystem; it must not be represented as original ECS hardware.
 
+**Implementation priority:** complete the digital cassette-data source through repeated save, verify, and load tests on unmodified original hardware before building a 6309 carrier, video controller, or machine-intelligence node. It is the first compatibility product and the project’s reference for removable data.
+
 ## 1. Digital cassette-data source
 
 Build a modern, solid-state substitute for the external cassette recorder supported by the ECS. It must behave like a compatible recorder at the ECS connectors, while storing recordings as digital files.
@@ -86,3 +88,5 @@ The CP1610-facing command protocol is specified in [the CP1610–6309 mailbox in
 ## Immediate next experiment
 
 Make one known-good `CSAVE` recording with an ECS and a recorder from the guide's compatible class, digitize it at a lossless sample rate, and record the program name, ECS region (NTSC/PAL), recorder model, cable type, and volume settings. That capture is the reference artifact for the digital cassette-data work.
+
+Do not connect an active digital device to either data lead until the connector, common/return, levels, and recorder-side loading have been measured. The first interface fixture should be passive: a correctly identified breakout and observation lead for the real recorder, followed by playback-only emulation, then capture, then `REMOTE` control.
